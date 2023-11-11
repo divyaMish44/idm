@@ -1,4 +1,4 @@
-package com.intuit.idm.config;
+package com.intuit.idm.jwt;
 
 import com.intuit.idm.model.User;
 import io.jsonwebtoken.Claims;
@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,7 +23,7 @@ public class JwtService {
     @Value("${application.security.jwt.expiration}")
     private long jwtExpiration;
 
-    public String extractUsername(String token) {
+    public String extractUserId(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -77,9 +76,9 @@ public class JwtService {
                 .getBody();
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    public boolean isTokenValid(String token, User userDetails) {
+        final String username = extractUserId(token);
+        return (username.equals(userDetails.getId())) && !isTokenExpired(token);
     }
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);

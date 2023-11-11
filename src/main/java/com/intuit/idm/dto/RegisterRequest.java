@@ -1,4 +1,4 @@
-package com.intuit.idm.controller;
+package com.intuit.idm.dto;
 
 public class RegisterRequest {
     private String email;

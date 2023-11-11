@@ -1,5 +1,8 @@
-package com.intuit.idm.config;
+package com.intuit.idm.jwt;
 
+import com.intuit.idm.jwt.JwtService;
+import com.intuit.idm.model.User;
+import com.intuit.idm.service.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,9 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -24,7 +27,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
 
     @Autowired
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -36,17 +39,23 @@ public class JwtAuthFilter extends OncePerRequestFilter{
             filterChain.doFilter(request, response);
             return;
         }
+        System.out.println("blahhhhhhhhhhhhhh" +  request.getHeader("Authorization"));
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
-        final String userEmail;
+        final String userId;
         if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
         jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+        userId = jwtService.extractUserId(jwt);
+        System.out.println("user id is :" + userId + "security " + SecurityContextHolder.getContext().getAuthentication());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (userId != null &&  (auth == null || auth.getAuthorities().contains(
+                new SimpleGrantedAuthority("ROLE_ANONYMOUS")))) {
+            User userDetails = this.userDetailsService.loadUserByUserId(userId);
+            System.out.println("user details :" + userDetails.toString());
+
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,

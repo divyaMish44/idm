@@ -28,12 +28,15 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
-                        req.requestMatchers("/idm/v1/user/register")
+                        req.requestMatchers("/idm/v1/auth/register")
                                 .permitAll()
-                                .requestMatchers("/idm/v1/user/login")
+                                .requestMatchers("/idm/v1/auth/login")
+                                .permitAll()
+                                .anyRequest()
                                 .permitAll()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+
                 .authenticationProvider(authenticationProvider)
         ;
 

@@ -1,4 +1,4 @@
-package com.intuit.idm.controller;
+package com.intuit.idm.dto;
 
 import lombok.*;
 

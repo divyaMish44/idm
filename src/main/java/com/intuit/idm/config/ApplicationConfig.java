@@ -2,6 +2,7 @@ package com.intuit.idm.config;
 
 
 import com.intuit.idm.respository.UserRepository;
+import com.intuit.idm.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -25,20 +26,23 @@ public class ApplicationConfig {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    CustomUserDetailsService customUserDetailsService;
+
 
     @Bean
     public AuthenticationProvider authenticationProvider(ApplicationConfig applicationConfig) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService());
+        authProvider.setUserDetailsService(customUserDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//        return username -> userRepository.findByEmail(username)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+//    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
